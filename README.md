@@ -2,7 +2,7 @@
 
 An interactive parallax scrolling experience built for **Techfest, IIT Bombay** (Web Development domain — *Interactive Parallax Scrolling Page*).
 
-🔗 **Live demo:** _add your GitHub Pages link here once enabled_
+🔗 **Live demo:** https://chiragpoddar007.github.io/axiom-parallax-scrolling/
 
 ![Axiom](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/main_page.png) ![01 — Lines](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/01%20%E2%80%94%20Lines.png) ![02 — Planes](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/02%20%E2%80%94%20Planes.png) ![03 — Volume](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/03%20%E2%80%94%20Volume.png) ![Conclusion](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/Conclusion%20%C2%B7%20The%20Axiom%20(2).png) 
 
@@ -74,7 +74,7 @@ No internet connection needed after first load (fonts cache after the first visi
 
 ## Design notes
 
-Deliberately distinct from the other two Techfest submissions in this series ([NERVE](https://github.com/yourusername/nerve-cyborg-landing-page) and [Neural Core](https://github.com/yourusername/techfest-build-in-3d)):
+Deliberately distinct from the other two Techfest submissions in this series ([Nerve-Cyborg-Landing-Page](https://github.com/chiragpoddar007/Nerve-Cyborg-Landing-Page) and [Build-in-3d](https://github.com/chiragpoddar007/Build-in-3d):
 
 - Coral orange `#ff6542` as primary (vs. teal in the other builds)
 - Bebas Neue display type (vs. Orbitron / Space Grotesk)
