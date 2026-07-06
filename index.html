@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIOM — Pure Form. Pure Motion.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06070e;
+  --bg-soft: #0c0e1a;
+  --accent: #ff6542;
+  --secondary: #a78bfa;
+  --tertiary: #34d399;
+  --fg: #f5f5fa;
+  --muted: rgba(245, 245, 250, 0.55);
+  --faint: rgba(245, 245, 250, 0.32);
+  --border: rgba(245, 245, 250, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient atmosphere overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 0%, rgba(255,101,66,0.06), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 100%, rgba(167,139,250,0.05), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(52,211,153,0.025), transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: overlay;
+}
+
+/* Scroll progress bar */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--secondary));
+  transform-origin: left;
+  transform: scaleX(0);
+  z-index: 100;
+  will-change: transform;
+  box-shadow: 0 0 12px rgba(255,101,66,0.4);
+}
+
+/* Navigation */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+  z-index: 50;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  transition: padding 0.4s, background 0.4s;
+}
+
+.nav.scrolled {
+  padding: 16px 48px;
+  background: rgba(6, 7, 14, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 30px;
+  letter-spacing: 0.18em;
+  color: var(--fg);
+  position: relative;
+  padding-left: 18px;
+}
+
+.brand::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  transform: translateY(-50%) rotate(45deg);
+  box-shadow: 0 0 16px var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.3s;
+  position: relative;
+  padding: 6px 0;
+}
+
+.nav-links a:hover, .nav-links a.active { color: var(--fg); }
+
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 1px;
+  background: var(--accent);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-links a:hover::before, .nav-links a.active::before { width: 100%; }
+
+.nav-mobile-toggle { display: none; }
+
+/* Parallax scene */
+.scene {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.parallax {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  will-change: transform;
+}
+
+/* Idle animations — applied to child shapes, NOT parallax wrapper */
+@keyframes fa {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+
+@keyframes rc {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rcc {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes rd {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(405deg); }
+}
+
+.anim-float { animation: fa 10s ease-in-out infinite; }
+.anim-float-slow { animation: fa 12s ease-in-out infinite; }
+.anim-float-fast { animation: fa 8s ease-in-out infinite; }
+.anim-rotate-cw { animation: rc 60s linear infinite; }
+.anim-rotate-cw-slow { animation: rc 90s linear infinite; }
+.anim-rotate-ccw { animation: rcc 80s linear infinite; }
+.anim-rotate-ccw-slow { animation: rcc 45s linear infinite; }
+.anim-diamond { animation: rd 50s linear infinite; }
+.anim-diamond-fast { animation: rd 40s linear infinite; }
+
+/* Layer A: Giant section numbers — near-invisible outline text */
+.layer-numbers {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(280px, 42vw, 580px);
+  line-height: 0.82;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.04);
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: -0.02em;
+}
+
+/* Layer A: Large rotating rings */
+.layer-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.layer-ring.dashed {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Layer B: Medium geometric shapes */
+.layer-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.06);
+}
+
+.layer-square {
+  position: absolute;
+  background: rgba(255, 101, 66, 0.07);
+}
+
+.layer-rect {
+  position: absolute;
+  border: 1px solid rgba(52, 211, 153, 0.08);
+  background: transparent;
+}
+
+/* Layer C: Accent shapes */
+.layer-diamond {
+  position: absolute;
+  opacity: 0.25;
+}
+
+.layer-line {
+  position: absolute;
+  opacity: 0.3;
+}
+
+.layer-circle-outline {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid;
+  opacity: 0.25;
+}
+
+/* Layer D: Bright dots */
+.layer-dot {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.85;
+  box-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+}
+
+/* Content sections */
+.content { position: relative; z-index: 10; }
+
+section {
+  min-height: 100vh;
+  padding: 140px 48px 100px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Hero */
+.hero {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  animation: fadeUp 1s ease 0.2s both;
+}
+
+.hero-label::before, .hero-label::after {
+  content: '';
+  display: block;
+  width: 40px; height: 1px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(60px, 12vw, 200px);
+  line-height: 0.88;
+  letter-spacing: 0.005em;
+  margin-bottom: 48px;
+  color: var(--fg);
+  animation: fadeUp 1.2s ease 0.4s both;
+}
+
+.hero-title .accent {
+  background: linear-gradient(180deg, var(--accent) 0%, #ff8a6a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.hero-quote {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(15px, 1.4vw, 18px);
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto;
+  font-style: italic;
+  line-height: 1.7;
+  animation: fadeUp 1s ease 0.7s both;
+}
+
+.hero-quote::before {
+  content: '— ';
+  color: var(--accent);
+  font-style: normal;
+}
+
+.hero-quote cite {
+  display: block;
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--faint);
+  margin-top: 14px;
+  text-transform: uppercase;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--faint);
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: fadeUp 1s ease 1s both;
+}
+
+.scroll-hint-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--accent));
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-hint-line::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: 0;
+  width: 100%;
+  height: 30%;
+  background: linear-gradient(to bottom, transparent, var(--fg));
+  animation: scrollPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0% { top: -30%; opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section layouts */
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  width: 100%;
+}
+
+.section-grid.right .section-content { grid-column: 2; }
+.section-grid.left .section-content { grid-column: 1; }
+
+.section-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-marker {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(120px, 18vw, 280px);
+  line-height: 1;
+  -webkit-text-stroke: 1.5px;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.18;
+  letter-spacing: 0.02em;
+}
+
+.section-content {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.section-content.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-number::before {
+  content: '';
+  width: 40px; height: 1px;
+  display: block;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(54px, 7.5vw, 108px);
+  line-height: 0.92;
+  letter-spacing: 0.005em;
+  margin-bottom: 32px;
+}
+
+.section-title .accent {
+  display: inline-block;
+}
+
+.section-text {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 480px;
+  margin-bottom: 40px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.section-meta {
+  display: flex;
+  gap: 48px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  flex-wrap: wrap;
+}
+
+.section-meta span strong {
+  display: block;
+  color: var(--fg);
+  font-size: 24px;
+  font-weight: 500;
+  margin-top: 8px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* Section color themes */
+.violet .section-number { color: var(--secondary); }
+.violet .section-number::before { background: var(--secondary); }
+.violet .section-title .accent { color: var(--secondary); }
+.violet .section-marker { -webkit-text-stroke-color: var(--secondary); }
+
+.orange .section-number { color: var(--accent); }
+.orange .section-number::before { background: var(--accent); }
+.orange .section-title .accent { color: var(--accent); }
+.orange .section-marker { -webkit-text-stroke-color: var(--accent); }
+
+.green .section-number { color: var(--tertiary); }
+.green .section-number::before { background: var(--tertiary); }
+.green .section-title .accent { color: var(--tertiary); }
+.green .section-marker { -webkit-text-stroke-color: var(--tertiary); }
+
+/* End section */
+.end {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.end-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--tertiary);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.end-label::before, .end-label::after {
+  content: '';
+  display: block;
+  width: 40px; height: 1px;
+  background: var(--tertiary);
+}
+
+.end-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 14vw, 220px);
+  line-height: 0.88;
+  letter-spacing: 0.005em;
+  margin-bottom: 32px;
+}
+
+.end-title .accent {
+  background: linear-gradient(90deg, var(--accent) 0%, var(--secondary) 50%, var(--tertiary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.end-sub {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 560px;
+  margin: 0 auto 56px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.cta-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '→';
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0 rgba(255,101,66,0.4);
+}
+
+.btn-primary:hover {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: 0 0 32px rgba(255,101,66,0.3);
+}
+
+.btn-secondary:hover {
+  border-color: var(--secondary);
+  color: var(--secondary);
+  background: rgba(167,139,250,0.04);
+}
+
+.btn:hover::after { transform: translateX(6px); }
+
+/* Footer */
+footer {
+  position: relative;
+  z-index: 10;
+  padding: 40px 48px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--faint);
+  text-transform: uppercase;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: rgba(6, 7, 14, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+footer .credits { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+footer .credits .dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; }
+footer .credits strong { color: var(--fg); font-weight: 500; }
+
+footer .meta { display: flex; gap: 24px; align-items: center; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .nav { padding: 20px 28px; }
+  .nav.scrolled { padding: 14px 28px; }
+  section { padding: 120px 28px 80px; }
+  .section-grid { grid-template-columns: 1fr; gap: 24px; }
+  .section-grid.right .section-content,
+  .section-grid.left .section-content { grid-column: 1; }
+  .section-side { display: none; }
+  .section-meta { gap: 32px; }
+}
+
+@media (max-width: 600px) {
+  .nav { padding: 16px 20px; }
+  .nav.scrolled { padding: 12px 20px; }
+  .nav-links { gap: 18px; }
+  .nav-links a { font-size: 10px; }
+  .brand { font-size: 24px; padding-left: 16px; }
+  .brand::before { width: 6px; height: 6px; }
+  section { padding: 110px 20px 70px; }
+  .hero-label { font-size: 10px; letter-spacing: 0.25em; }
+  .hero-label::before, .hero-label::after { width: 24px; }
+  .hero-quote { font-size: 14px; }
+  .section-meta { gap: 20px; }
+  .section-meta span strong { font-size: 20px; }
+  .btn { padding: 14px 24px; font-size: 11px; }
+  footer { padding: 32px 20px; flex-direction: column; text-align: center; }
+  footer .meta { flex-direction: column; gap: 8px; }
+}
+
+@media (max-width: 390px) {
+  .nav-links { gap: 12px; }
+  .nav-links a { font-size: 9px; letter-spacing: 0.06em; }
+  .brand { font-size: 22px; }
+  .hero-title { font-size: 56px; }
+  .section-title { font-size: 48px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .parallax { transform: none !important; }
+  .progress-bar { transform: scaleX(1) !important; }
+  .section-content { opacity: 1 !important; transform: none !important; }
+  html { scroll-behavior: auto; }
+  .scroll-hint-line::after { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"></div>
+
+<nav class="nav" id="nav">
+  <div class="brand">AXIOM</div>
+  <ul class="nav-links">
+    <li><a href="#lines">01 / Lines</a></li>
+    <li><a href="#planes">02 / Planes</a></li>
+    <li><a href="#volume">03 / Volume</a></li>
+  </ul>
+</nav>
+
+<!-- Parallax Scene: full page height, behind content -->
+<div class="scene">
+
+  <!-- LAYER A (speed 0.06): Giant section numbers + rotating rings -->
+  <div class="parallax" data-speed="0.06">
+    <div class="layer-numbers anim-float" style="top: 2%; left: -3%;">00</div>
+    <div class="layer-numbers anim-float-slow" style="top: 23%; right: -3%; animation-delay: -3s;">01</div>
+    <div class="layer-numbers anim-float" style="top: 47%; left: -3%; animation-delay: -5s;">02</div>
+    <div class="layer-numbers anim-float-slow" style="top: 71%; right: -3%; animation-delay: -7s;">03</div>
+
+    <div class="layer-ring anim-rotate-cw" style="top: 6%; right: 6%; width: 480px; height: 480px;"></div>
+    <div class="layer-ring dashed anim-rotate-ccw" style="top: 27%; left: 4%; width: 420px; height: 420px;"></div>
+    <div class="layer-ring anim-rotate-cw-slow" style="top: 50%; right: 8%; width: 460px; height: 460px; border-color: rgba(255,101,66,0.06);"></div>
+    <div class="layer-ring dashed anim-rotate-ccw-slow" style="top: 74%; left: 6%; width: 440px; height: 440px; border-color: rgba(52,211,153,0.05);"></div>
+  </div>
+
+  <!-- LAYER B (speed 0.22): Medium geometric shapes -->
+  <div class="parallax" data-speed="0.22">
+    <div class="layer-circle anim-float" style="top: 11%; left: 16%; width: 180px; height: 180px;"></div>
+    <div class="layer-square anim-rotate-cw" style="top: 17%; left: 68%; width: 140px; height: 140px; background: rgba(255,101,66,0.08);"></div>
+    <div class="layer-rect anim-float-slow" style="top: 36%; left: 73%; width: 200px; height: 280px; animation-delay: -2s;"></div>
+    <div class="layer-circle anim-float" style="top: 40%; left: 20%; width: 220px; height: 220px; background: rgba(167,139,250,0.07); animation-delay: -4s;"></div>
+    <div class="layer-square anim-rotate-ccw" style="top: 60%; left: 10%; width: 160px; height: 160px; background: rgba(52,211,153,0.08);"></div>
+    <div class="layer-rect anim-float-slow" style="top: 68%; left: 66%; width: 180px; height: 240px; animation-delay: -6s;"></div>
+    <div class="layer-circle anim-float" style="top: 86%; left: 28%; width: 160px; height: 160px; background: rgba(255,101,66,0.06); animation-delay: -1s;"></div>
+    <div class="layer-square anim-rotate-cw" style="top: 92%; left: 78%; width: 100px; height: 100px; background: rgba(167,139,250,0.08);"></div>
+  </div>
+
+  <!-- LAYER C (speed 0.47): Accent shapes -->
+  <div class="parallax" data-speed="0.47">
+    <div class="layer-diamond anim-diamond" style="top: 5%; left: 48%; width: 60px; height: 60px; background: var(--accent); opacity: 0.28;"></div>
+    <div class="layer-line anim-float" style="top: 13%; left: 6%; width: 120px; height: 2px; background: var(--secondary); opacity: 0.3; animation-delay: -2s;"></div>
+    <div class="layer-circle-outline anim-float-slow" style="top: 24%; left: 38%; width: 80px; height: 80px; border-color: var(--tertiary); opacity: 0.25; animation-delay: -3s;"></div>
+    <div class="layer-diamond anim-diamond-fast" style="top: 32%; left: 63%; width: 40px; height: 40px; background: var(--secondary); opacity: 0.3; animation-delay: -4s;"></div>
+    <div class="layer-line anim-float" style="top: 49%; left: 4%; width: 180px; height: 2px; background: var(--accent); opacity: 0.3;"></div>
+    <div class="layer-circle-outline anim-float-slow" style="top: 55%; left: 43%; width: 100px; height: 100px; border-color: var(--accent); opacity: 0.25; animation-delay: -5s;"></div>
+    <div class="layer-diamond anim-diamond" style="top: 67%; left: 28%; width: 50px; height: 50px; background: var(--tertiary); opacity: 0.28; animation-delay: -6s;"></div>
+    <div class="layer-line anim-float" style="top: 79%; left: 58%; width: 140px; height: 2px; background: var(--tertiary); opacity: 0.3; animation-delay: -1s;"></div>
+    <div class="layer-circle-outline anim-float-slow" style="top: 88%; left: 22%; width: 70px; height: 70px; border-color: var(--secondary); opacity: 0.25;"></div>
+    <div class="layer-diamond anim-diamond-fast" style="top: 94%; left: 72%; width: 36px; height: 36px; background: var(--accent); opacity: 0.3; animation-delay: -3s;"></div>
+  </div>
+
+  <!-- LAYER D (speed 0.74): Small bright dots -->
+  <div class="parallax" data-speed="0.74">
+    <div class="layer-dot anim-float-fast" style="top: 4%; left: 24%; width: 8px; height: 8px; background: var(--accent); color: var(--accent);"></div>
+    <div class="layer-dot anim-float" style="top: 8%; left: 84%; width: 6px; height: 6px; background: var(--secondary); color: var(--secondary); animation-delay: -2s;"></div>
+    <div class="layer-dot anim-float-slow" style="top: 16%; left: 54%; width: 10px; height: 10px; background: var(--tertiary); color: var(--tertiary); animation-delay: -4s;"></div>
+    <div class="layer-dot anim-float-fast" style="top: 21%; left: 14%; width: 5px; height: 5px; background: var(--accent); color: var(--accent); animation-delay: -1s;"></div>
+    <div class="layer-dot anim-float" style="top: 30%; left: 76%; width: 7px; height: 7px; background: var(--secondary); color: var(--secondary); animation-delay: -3s;"></div>
+    <div class="layer-dot anim-float-slow" style="top: 36%; left: 36%; width: 12px; height: 12px; background: var(--tertiary); color: var(--tertiary); animation-delay: -5s;"></div>
+    <div class="layer-dot anim-float-fast" style="top: 43%; left: 88%; width: 6px; height: 6px; background: var(--accent); color: var(--accent); animation-delay: -2s;"></div>
+    <div class="layer-dot anim-float" style="top: 51%; left: 16%; width: 9px; height: 9px; background: var(--secondary); color: var(--secondary); animation-delay: -4s;"></div>
+    <div class="layer-dot anim-float-slow" style="top: 59%; left: 60%; width: 8px; height: 8px; background: var(--tertiary); color: var(--tertiary); animation-delay: -6s;"></div>
+    <div class="layer-dot anim-float-fast" style="top: 66%; left: 6%; width: 11px; height: 11px; background: var(--accent); color: var(--accent); animation-delay: -1s;"></div>
+    <div class="layer-dot anim-float" style="top: 73%; left: 46%; width: 6px; height: 6px; background: var(--secondary); color: var(--secondary); animation-delay: -3s;"></div>
+    <div class="layer-dot anim-float-slow" style="top: 81%; left: 80%; width: 10px; height: 10px; background: var(--tertiary); color: var(--tertiary); animation-delay: -5s;"></div>
+    <div class="layer-dot anim-float-fast" style="top: 87%; left: 33%; width: 7px; height: 7px; background: var(--accent); color: var(--accent); animation-delay: -2s;"></div>
+    <div class="layer-dot anim-float" style="top: 93%; left: 68%; width: 9px; height: 9px; background: var(--secondary); color: var(--secondary); animation-delay: -4s;"></div>
+    <div class="layer-dot anim-float-slow" style="top: 97%; left: 12%; width: 6px; height: 6px; background: var(--tertiary); color: var(--tertiary); animation-delay: -6s;"></div>
+  </div>
+
+</div>
+
+<!-- Content (z-index: 10, above scene) -->
+<div class="content">
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="container">
+      <div class="hero-label">AXIOM · A STUDY IN FORM</div>
+      <h1 class="hero-title">PURE FORM.<br><span class="accent">PURE MOTION.</span></h1>
+      <p class="hero-quote">
+        A point is that which has no part. A line is breadthless length. The whole is greater than the part.
+        <cite>Euclid — Elements, Book I</cite>
+      </p>
+    </div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-hint-line"></div>
+    </div>
+  </section>
+
+  <!-- 01 — LINES (right-aligned, violet) -->
+  <section id="lines" class="violet">
+    <div class="container">
+      <div class="section-grid right">
+        <div class="section-side">
+          <div class="section-marker">L</div>
+        </div>
+        <div class="section-content">
+          <div class="section-number">01 — Lines</div>
+          <h2 class="section-title">The <span class="accent">Breadthless</span><br>Length</h2>
+          <p class="section-text">A line is the first departure from the point — a trajectory with direction but no breadth. In motion it becomes gesture; in repetition, structure. Lines draw the boundary of every form that follows.</p>
+          <div class="section-meta">
+            <span>Dimension<strong>01 / D</strong></span>
+            <span>Element<strong>Line</strong></span>
+            <span>Motion<strong>Linear</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 — PLANES (left-aligned, orange) -->
+  <section id="planes" class="orange">
+    <div class="container">
+      <div class="section-grid left">
+        <div class="section-content">
+          <div class="section-number">02 — Planes</div>
+          <h2 class="section-title">A Surface<br><span class="accent">Stretched</span> Thin</h2>
+          <p class="section-text">When a line moves along another line, it generates a plane. A surface has length and breadth but no depth — a thought extended into space, ready to receive light, shadow, and intention.</p>
+          <div class="section-meta">
+            <span>Dimension<strong>02 / D</strong></span>
+            <span>Element<strong>Plane</strong></span>
+            <span>Motion<strong>Lateral</strong></span>
+          </div>
+        </div>
+        <div class="section-side">
+          <div class="section-marker">P</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 — VOLUME (right-aligned, green) -->
+  <section id="volume" class="green">
+    <div class="container">
+      <div class="section-grid right">
+        <div class="section-side">
+          <div class="section-marker">V</div>
+        </div>
+        <div class="section-content">
+          <div class="section-number">03 — Volume</div>
+          <h2 class="section-title">The Body<br><span class="accent">Built</span> From Shadow</h2>
+          <p class="section-text">A plane in motion begets volume — the third axis, where presence takes weight. Form becomes occupiable, observable from every angle, alive under light. This is where geometry becomes architecture.</p>
+          <div class="section-meta">
+            <span>Dimension<strong>03 / D</strong></span>
+            <span>Element<strong>Volume</strong></span>
+            <span>Motion<strong>Radial</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section class="end" id="end">
+    <div class="container">
+      <div class="end-label">Conclusion · The Axiom</div>
+      <h2 class="end-title">FORM IS <span class="accent">MOTION.</span></h2>
+      <p class="end-sub">Every shape is a record of movement. Every movement, a shape in waiting. The axiom closes the loop — geometry, animated, returns to itself.</p>
+      <div class="cta-group">
+        <a href="#top" class="btn btn-primary">Begin the study</a>
+        <a href="#lines" class="btn btn-secondary">Re-examine</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="credits">
+    <span>© AXIOM</span>
+    <span class="dot"></span>
+    <span>An interactive study in form &amp; motion</span>
+  </div>
+  <div class="meta">
+    <span>Presented at <strong>Techfest · IIT Bombay</strong></span>
+  </div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const parallaxElements = document.querySelectorAll('.parallax');
+  const progressBar = document.querySelector('.progress-bar');
+  const nav = document.getElementById('nav');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const sections = document.querySelectorAll('section[id]');
+
+  let scrollY = window.scrollY;
+  let ticking = false;
+
+  // Core parallax: each layer translates by scrollY * (1 - speed)
+  // Higher speed = less translation = appears to move faster with scroll = closer to viewer
+  function updateParallax() {
+    if (!prefersReducedMotion) {
+      for (let i = 0; i < parallaxElements.length; i++) {
+        const el = parallaxElements[i];
+        const speed = parseFloat(el.dataset.speed);
+        const offset = scrollY * (1 - speed);
+        el.style.transform = 'translateY(' + offset + 'px)';
+      }
+    }
+
+    // Progress bar: scaleX(scrollY / docHeight)
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? Math.min(scrollY / docHeight, 1) : 0;
+    progressBar.style.transform = 'scaleX(' + progress + ')';
+
+    // Nav background toggle
+    if (scrollY > 40) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    // Active nav link based on section in view
+    let currentId = '';
+    const trigger = window.innerHeight * 0.4;
+    sections.forEach(function(section) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= trigger && rect.bottom >= trigger) {
+        currentId = section.id;
+      }
+    });
+    navLinks.forEach(function(link) {
+      const href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + currentId);
+    });
+
+    ticking = false;
+  }
+
+  function onScroll() {
+    scrollY = window.scrollY;
+    if (!ticking) {
+      requestAnimationFrame(updateParallax);
+      ticking = true;
+    }
+  }
+
+  // Passive scroll listener for performance
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', updateParallax, { passive: true });
+
+  // IntersectionObserver for content reveal
+  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+
+    document.querySelectorAll('.section-content').forEach(function(el) {
+      revealObserver.observe(el);
+    });
+  } else {
+    // Reduced motion: show all content immediately
+    document.querySelectorAll('.section-content').forEach(function(el) {
+      el.classList.add('in-view');
+    });
+  }
+
+  // Smooth anchor scrolling with offset
+  document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      const href = this.getAttribute('href');
+      if (!href || href === '#') return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        const top = target.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: top,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth'
+        });
+      }
+    });
+  });
+
+  // Initial paint
+  updateParallax();
+})();
+</script>
+
+</body>
+</html>
