@@ -4,7 +4,8 @@ An interactive parallax scrolling experience built for **Techfest, IIT Bombay** 
 
 🔗 **Live demo:** _add your GitHub Pages link here once enabled_
 
-![Axiom](https://img.shields.io/badge/status-submitted-34d399) ![type](https://img.shields.io/badge/type-parallax_experience-ff6542) ![task](https://img.shields.io/badge/task-3_%2F_150_coins-a78bfa)
+![Axiom](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/main_page.png) ![01 — Lines](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/01%20%E2%80%94%20Lines.png) ![02 — Planes](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/02%20%E2%80%94%20Planes.png) ![03 — Volume](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/03%20%E2%80%94%20Volume.png) ![Conclusion](https://github.com/chiragpoddar007/axiom-parallax-scrolling/blob/main/image/Conclusion%20%C2%B7%20The%20Axiom%20(2).png) 
+
 
 ---
 
